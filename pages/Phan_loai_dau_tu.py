@@ -1,10 +1,9 @@
 # ============================================================
-# PAGE 2 – PHÂN TÍCH DOANH NGHIỆP | NHÀ ĐẦU TƯ MỚI
-# Full Wireframe Implementation
+# TRANG 2 – PHÂN TÍCH DOANH NGHIỆP | NHÀ ĐẦU TƯ
 # ============================================================
 
 # =======================
-# LAYER 0 – CONFIG + CSS
+# LỚP 0 – CẤU HÌNH + CSS
 # =======================
 import streamlit as st
 import pandas as pd
@@ -113,40 +112,19 @@ body { background-color:#0b1220; color:#e5e7eb; }
 """, unsafe_allow_html=True)
 
 # =======================
-# LAYER 1 – LOAD DATA
+# LỚP 1 – TẢI DỮ LIỆU
 # =======================
 @st.cache_data
 def load_data():
-    """Load all required data files"""
-    try:
-        # Try loading from root directory first
-        df_health = pd.read_excel("Data_health_score_dashboard.xlsx")
-        df_flow = pd.read_excel("data_dau_tu.xlsx")
-        df_ft = pd.read_excel("df_ft_2124.xlsx")
-    except FileNotFoundError:
-        # Try loading from Data dash folder
-        try:
-            data_dir = Path("Data dash")
-            df_health = pd.read_excel(data_dir / "Data_health_score_dashboard.xlsx")
-            df_flow = pd.read_excel(data_dir / "data_dau_tu.xlsx")
-            df_ft = pd.read_excel(data_dir / "df_ft_2124.xlsx")
-        except FileNotFoundError:
-            # Try from DATA folder
-            data_dir = Path("DATA")
-            df_health = pd.read_excel("Data_health_score_dashboard.xlsx")
-            df_flow = pd.read_excel("data_dau_tu.xlsx")
-            df_ft = pd.read_excel(data_dir / "df_ft_sorted_2021_2024.xlsx")
-    
+    df_health = pd.read_parquet("Data_health_score_dashboard.parquet")
+    df_flow = pd.read_parquet("data_dau_tu.parquet")
+    df_ft = pd.read_parquet("df_ft_sorted_2021_2024.parquet")
     return df_health, df_flow, df_ft
 
-try:
-    df_health, df_flow, df_ft = load_data()
-except Exception as e:
-    st.error(f"Lỗi khi tải dữ liệu: {str(e)}")
-    st.stop()
+df_health, df_flow, df_ft = load_data()
 
 # =======================
-# LAYER 2 – CHUẨN HÓA & XỬ LÝ
+# LỚP 2 – CHUẨN HÓA & XỬ LÝ
 # =======================
 @st.cache_data
 def process_data(df_health, df_flow, df_ft):
@@ -188,7 +166,7 @@ def process_data(df_health, df_flow, df_ft):
 df_health, df_flow, df_ft = process_data(df_health, df_flow, df_ft)
 
 # =======================
-# LAYER 3 – HEADER + SELECTION
+# LỚP 3 – TIÊU ĐỀ + LỰA CHỌN
 # =======================
 st.markdown("<h1 style='text-align: center; background-color: #ffffff; color: #0f172a; font-size: 48px; font-weight: 800; margin-bottom: 20px; margin-top: 10px; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>PHÂN TÍCH DOANH NGHIỆP</h1>", unsafe_allow_html=True)
 
@@ -342,7 +320,7 @@ st.markdown("<div class='section'>Kết luận nhanh sức khỏe doanh nghiệp
 
 c1, c2, c3, c4 = st.columns(4)
 
-# Card 1: Z-Score tổng hợp sức khỏe
+# Thẻ 1: Z-Score tổng hợp sức khỏe
 health_z = info.get('Health_Z', None)
 if pd.notna(health_z):
     if health_z > 1:
@@ -369,7 +347,7 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-# Card 2: Credit Rating
+# Thẻ 2: Xếp hạng tín nhiệm
 credit_rating = info.get('Credit_Rating_Z', 'N/A')
 c2.markdown(f"""
 <div class="card-rating">
@@ -378,7 +356,7 @@ c2.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Card 3: ROA
+# Thẻ 3: ROA
 roa = info.get('ROA', 0)
 c3.markdown(f"""
 <div class="card-roa">
@@ -387,7 +365,7 @@ c3.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Card 4: ROE
+# Thẻ 4: ROE
 roe = info.get('ROE', 0)
 c4.markdown(f"""
 <div class="card-roe">
@@ -401,7 +379,7 @@ c4.markdown(f"""
 # =======================
 st.markdown("<div class='section'>Giải thích điểm sức khỏe</div>", unsafe_allow_html=True)
 
-# Analyze different aspects
+# Phân tích các khía cạnh khác nhau
 current_ratio = info.get('Current Ratio', 0)
 cash_ratio = info.get('Cash Ratio', 0)
 interest_coverage = info.get('Interest Coverage', 0)
@@ -454,10 +432,10 @@ elif revenue_growth > 0:
 else:
     analysis_text += f"Cần lưu ý về xu hướng tăng trưởng (tăng trưởng doanh thu: {revenue_growth:.2f}%)."
 
-# Add Z-Score indicators
+# Thêm các chỉ số Z-Score
 analysis_text += "</p><h4 style='color:#0f172a; margin-top:20px; margin-bottom:10px;'>Đánh giá tổng quan (Z-Score)</h4>"
 
-# Get Z-scores if available
+# Lấy các giá trị Z-Score nếu có
 roa_z = info.get('ROA_z', None)
 roe_z = info.get('ROE_z', None)
 current_ratio_z = info.get('Current Ratio_z', None)
@@ -524,7 +502,7 @@ st.markdown(analysis_text, unsafe_allow_html=True)
 # =======================
 # (3) DÒNG TIỀN NHÀ ĐẦU TƯ
 # =======================
-st.markdown("<div class='section'>DÒNG TIỀN NHÀ ĐÀU TƯ NƯỚC NGOÀI</div>", unsafe_allow_html=True)
+st.markdown("<div class='section'>DÒNG TIỀN NHÀ ĐẦU TƯ NƯỚC NGOÀI</div>", unsafe_allow_html=True)
 
 # (3A) Dòng tiền theo năm
 st.markdown("<h4 style='color:#0f172a; background-color:#ffffff; padding:10px; border-radius:8px; display:inline-block; margin-top:20px;'> Dòng tiền theo năm</h4>", unsafe_allow_html=True)
@@ -550,7 +528,7 @@ if len(flow_year_data) > 0 and "Total_Net_F_Val" in flow_year_data.columns:
     fig_year.update_traces(marker_line_color='rgba(0,0,0,0.3)', marker_line_width=1)
     st.plotly_chart(fig_year, use_container_width=True)
     
-    # Analysis text
+    # Phân tích nhận xét
     avg_flow = flow_year_chart["Total_Net_F_Val"].mean()
     if avg_flow > 0:
         flow_trend = "tích lũy"
@@ -626,7 +604,7 @@ if len(flow_daily_data) > 0 and "Net.F_Val" in flow_daily_data.columns:
             
             st.plotly_chart(fig_daily, use_container_width=True)
             
-            # Analysis text
+            # Phân tích nhận xét
             if len(flow_daily_chart) >= 30:
                 recent_trend = "tích cực" if flow_daily_chart["Net.F_Val"].tail(30).mean() > 0 else "tiêu cực"
             else:
@@ -654,7 +632,7 @@ st.markdown("<div class='section'>Cảnh báo & Gợi ý đầu tư</div>", unsa
 warnings = []
 suggestions = []
 
-# Check for risks
+# Kiểm tra rủi ro
 if debt_to_asset > 0.6:
     warnings.append("Đòn bẩy tài chính cao (tỷ lệ nợ/vốn > 60%)")
 if net_income_growth < 0:
@@ -664,7 +642,7 @@ if current_ratio < 1.0:
 if roa_val < 0 or roe_val < 0:
     warnings.append("Doanh nghiệp đang thua lỗ")
 
-# Generate suggestions dựa trên Z-Score tổng hợp sức khỏe (health_z)
+# Sinh gợi ý dựa trên Z-Score tổng hợp sức khỏe (health_z)
 if health_z is not None and pd.notna(health_z):
     if health_z > 1 and credit_rating in ['AAA', 'AA', 'A']:
         suggestions.append("Doanh nghiệp có sức khỏe tài chính tốt, phù hợp cho đầu tư dài hạn")
@@ -693,6 +671,6 @@ if len(suggestions) > 0:
     </div>
     """, unsafe_allow_html=True)
 
-# Footer
+# Chân trang
 st.markdown("---")
 
