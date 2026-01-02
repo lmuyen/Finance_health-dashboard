@@ -1,17 +1,17 @@
 # ============================================================
-# PAGE 1 – TỔNG QUAN THỊ TRƯỜNG | NHÀ ĐẦU TƯ MỚI
-# Full Layer 0 → 7 | Academic Dark Finance Dashboard
+# TRANG 1 – TỔNG QUAN THỊ TRƯỜNG | NHÀ ĐẦU TƯ MỚI
+# Đầy đủ các lớp 0 → 7 | Bảng điều khiển Tài chính Giao diện Tối
 # ============================================================
 
 # =======================
-# LAYER 0 – CONFIG + CSS
+# LỚP 0 – CẤU HÌNH + CSS
 # =======================
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from pathlib import Path
 
 st.set_page_config(
     page_title="Tổng quan thị trường – Nhà đầu tư mới",
@@ -59,47 +59,24 @@ body { background-color:#0b1220; color:#ffffff; }
 </style>
 """, unsafe_allow_html=True)
 
-# =======================
-# LAYER 1 – LOAD DATA
-# =======================
-@st.cache_data
-def load_data():
-    """Load all required data files"""
-    try:
-        # Try loading from root directory first
-        df_health = pd.read_excel("Data_health_score_dashboard.xlsx")
-        df_flow = pd.read_excel("data_dau_tu.xlsx")
-        df_price = pd.read_excel("Price_2124.xlsx")
-        df_mcap = pd.read_excel("Marketcap_2124.xlsx")
-        df_volume = pd.read_excel("Volume_2124.xlsx")
-    except FileNotFoundError:
-        # Try loading from Data dash folder
-        try:
-            data_dir = Path("Data dash")
-            df_health = pd.read_excel(data_dir / "Data_health_score_dashboard.xlsx")
-            df_flow = pd.read_excel(data_dir / "data_dau_tu.xlsx")
-            df_price = pd.read_excel("Price_2124.xlsx")
-            df_mcap = pd.read_excel("Marketcap_2124.xlsx")
-            df_volume = pd.read_excel(data_dir / "Volume_2124.xlsx")
-        except FileNotFoundError:
-            # Try from DATA folder
-            data_dir = Path("DATA")
-            df_health = pd.read_excel(data_dir / "Data_health_score_dashboard.xlsx")
-            df_flow = pd.read_excel(data_dir / "data_dau_tu.xlsx")
-            df_price = pd.read_excel(data_dir / "Price_2124.xlsx")
-            df_mcap = pd.read_excel(data_dir / "Marketcap_2124.xlsx")
-            df_volume = pd.read_excel(data_dir / "Volume_2124.xlsx")
-    
-    return df_health, df_flow, df_price, df_mcap, df_volume
-
-try:
-    df_health, df_flow, df_price, df_mcap, df_volume = load_data()
-except Exception as e:
-    st.error(f"Lỗi khi tải dữ liệu: {str(e)}")
-    st.stop()
 
 # =======================
-# LAYER 2 – CHUẨN HÓA & XỬ LÝ
+# LỚP 1 – TẢI DỮ LIỆU
+# =======================
+import pandas as pd
+
+
+# Đọc dữ liệu từ file Parquet (theo tên file thực tế)
+df_health = pd.read_parquet("Data_health_score_dashboard.parquet")
+df_flow = pd.read_parquet("data_dau_tu.parquet")
+df_price = pd.read_parquet("Price_2124.parquet")
+df_mcap = pd.read_parquet("Marketcap_2124.parquet")
+df_volume = pd.read_parquet("Volume_2124.parquet")
+df_ft = pd.read_parquet("df_ft_sorted_2021_2024.parquet")
+
+
+# =======================
+# LỚP 2 – CHUẨN HÓA & XỬ LÝ
 # =======================
 @st.cache_data
 def process_data(df_health, df_flow, df_price, df_mcap, df_volume):
@@ -164,7 +141,7 @@ def process_data(df_health, df_flow, df_price, df_mcap, df_volume):
 df, df_price, df_mcap, df_volume = process_data(df_health, df_flow, df_price, df_mcap, df_volume)
 
 # =======================
-# LAYER 3 – SIDEBAR FILTER
+# LỚP 3 – BỘ LỌC BÊN
 # =======================
 st.sidebar.header("Bộ lọc thị trường")
 
@@ -212,14 +189,14 @@ dff = df[
 ]
 
 # =======================
-# LAYER 4 – HEADER
+# LỚP 4 – TIÊU ĐỀ
 # =======================
 st.markdown("<h1 style='text-align: center; background-color: #ffffff; color: #0f172a; font-size: 48px; font-weight: 800; margin-bottom: 20px; margin-top: 10px; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>TỔNG QUAN THỊ TRƯỜNG</h1>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle' style='text-align: center;'>Dashboard hỗ trợ nhà đầu tư mới | Dữ liệu 2021–2024</div>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # =======================
-# LAYER 5 – KPI MARKET LEVEL
+# LỚP 5 – KPI CẤP THỊ TRƯỜNG
 # =======================
 st.markdown("<div class='section' style='color:#000;'>Tổng quan thị trường</div>", unsafe_allow_html=True)
 
@@ -282,7 +259,7 @@ k8.markdown(
 )
 
 # =======================
-# LAYER 6 – MARKET INSIGHT
+# LỚP 6 – NHẬN ĐỊNH THỊ TRƯỜNG
 # =======================
 st.markdown("<div class='section'>Market Insight</div>", unsafe_allow_html=True)
 
@@ -379,7 +356,7 @@ if "Ngành" in dff.columns and "Credit_Rating_Z" in dff.columns:
         st.plotly_chart(fig_heat, use_container_width=True)
 
 # =======================
-# LAYER 7 – PHÂN TÍCH NGÀNH (MẶC ĐỊNH HIỂN THỊ)
+# LỚP 7 – PHÂN TÍCH NGÀNH (HIỂN THỊ MẶC ĐỊNH)
 # =======================
 st.markdown("<div class='section'>Sức khỏe tài chính theo ngành (Toàn thị trường)</div>", unsafe_allow_html=True)
 
@@ -409,7 +386,7 @@ if "Health_Score" in dff.columns and "Ngành" in dff.columns:
     st.plotly_chart(fig_industry, use_container_width=True)
 
 # =======================
-# LAYER 8 – TOP DOANH NGHIỆP (CÓ ĐIỀU KIỆN)
+# LỚP 8 – TOP DOANH NGHIỆP (CÓ ĐIỀU KIỆN)
 # =======================
 if top_n > 0:
     st.markdown("<div class='section'>Top doanh nghiệp theo điểm sức khỏe</div>", unsafe_allow_html=True)
@@ -430,7 +407,7 @@ if top_n > 0:
         )
 
 # =======================
-# (4) DÒNG TIỀN THEO HEALTH_GROUP
+# (4) DÒNG TIỀN THEO NHÓM SỨC KHỎE
 # =======================
 st.markdown("<div class='section'>Dòng tiền theo nhóm sức khỏe</div>", unsafe_allow_html=True)
 
@@ -484,7 +461,7 @@ if "Health_Group" in df_flow.columns and "Total_Net_F_Val" in df_flow.columns:
 else:
     st.info("Không có dữ liệu để phân tích dòng tiền theo nhóm sức khỏe.")
 # =======================
-# LAYER 9 – BẢNG GỢI Ý ĐẦU TƯ (Moved Up)
+# LỚP 9 – BẢNG GỢI Ý ĐẦU TƯ (ĐÃ DI CHUYỂN LÊN TRÊN)
 # =======================
 st.markdown("<div class='section' style='color:#000000;'>Gợi ý doanh nghiệp nên theo dõi</div>", unsafe_allow_html=True)
 
@@ -525,7 +502,7 @@ if "Health_Score" in dff.columns:
 
 
 # =======================
-# LAYER 10 – TRA CỨU DOANH NGHIỆP
+# LỚP 10 – TRA CỨU DOANH NGHIỆP
 # =======================
 st.markdown("<div class='section' style='color:#000000;'>Thông tin doanh nghiệp</div>", unsafe_allow_html=True)
 
@@ -549,14 +526,29 @@ with col_date2:
         key="end_date"
     )
 with col_date3:
-    st.write("")  # Spacing
+    st.write("") 
 
-# Get company info
 company_info = df[(df["Ticker"] == ticker_search) & (df["Year"] == year)]
 if len(company_info) > 0:
     info = company_info.iloc[0]
 
-    # Card thông tin doanh nghiệp dạng bảng 3x3 màu xanh đen
+    # Tính lại các chỉ số theo khoảng ngày đã chọn
+    price_ts = df_price[
+        (df_price["Ticker"] == ticker_search) &
+        (df_price["Date"] >= pd.to_datetime(start_date)) &
+        (df_price["Date"] <= pd.to_datetime(end_date))
+    ]
+    mcap_ts = df_mcap[
+        (df_mcap["Ticker"] == ticker_search) &
+        (df_mcap["Date"] >= pd.to_datetime(start_date)) &
+        (df_mcap["Date"] <= pd.to_datetime(end_date))
+    ]
+
+    avg_price = price_ts["Price"].mean() if len(price_ts) > 0 else 0
+    max_price = price_ts["Price"].max() if len(price_ts) > 0 else 0
+    min_price = price_ts["Price"].min() if len(price_ts) > 0 else 0
+    avg_mcap = mcap_ts["MarketCap"].mean() if len(mcap_ts) > 0 else 0
+
     st.markdown("""
     <style>
     .dark-info-card {
@@ -612,30 +604,26 @@ if len(company_info) > 0:
         <div class="dark-info-value">{info.get('Health_Score',0):.1f}</div>
         </div>
         <div class="dark-info-cell">
-        <div class="dark-info-title">Nhóm sức khỏe</div>
-        <div class="dark-info-value">{info.get('Health_Label','N/A')}</div>
-        </div>
-        <div class="dark-info-cell">
         <div class="dark-info-title">Xếp hạng tín nhiệm</div>
         <div class="dark-info-value">{info.get('Credit_Rating_Z','N/A')}</div>
         </div>
         <div class="dark-info-cell">
-        <div class="dark-info-title">Vốn hóa TB năm</div>
-        <div class="dark-info-value">{info.get('Avg_MarketCap',0)/1e9:,.1f} Tỷ</div>
+        <div class="dark-info-title">Vốn hóa TB</div>
+        <div class="dark-info-value">{avg_mcap/1e9:,.1f} Tỷ</div>
         </div>
         <div class="dark-info-cell">
-        <div class="dark-info-title">Giá cổ phiếu TB năm</div>
-        <div class="dark-info-value">{info.get('Avg_Price',0):,.0f} VND</div>
+        <div class="dark-info-title">Giá cổ phiếu TB</div>
+        <div class="dark-info-value">{avg_price:,.0f} VND</div>
         </div>
         <div class="dark-info-cell">
-        <div class="dark-info-title">Giá cao nhất năm</div>
-        <div class="dark-info-value">{info.get('Max_Price',0):,.0f} VND</div>
+        <div class="dark-info-title">Giá cao nhất</div>
+        <div class="dark-info-value">{max_price:,.0f} VND</div>
         </div>
         <div class="dark-info-cell">
-        <div class="dark-info-title">Giá thấp nhất năm</div>
-        <div class="dark-info-value">{info.get('Min_Price',0):,.0f} VND</div>
+        <div class="dark-info-title">Giá thấp nhất</div>
+        <div class="dark-info-value">{min_price:,.0f} VND</div>
         </div>
-        <div class="dark-info-cell" style="grid-column: 1 / span 3;">
+        <div class="dark-info-cell">
         <div class="dark-info-title">Trạng thái dòng tiền</div>
         <div class="dark-info-value" style="color:{'#10b981' if info.get('Buy_Net_Flag',0)==1 else '#ef4444'};">
             {"Mua ròng" if info.get('Buy_Net_Flag',0)==1 else "Bán ròng"}
@@ -644,6 +632,7 @@ if len(company_info) > 0:
     </div>
     </div>
     """, unsafe_allow_html=True)
+
     # Time series charts
     chart_col1, chart_col2 = st.columns(2)
 
